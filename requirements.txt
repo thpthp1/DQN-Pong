@@ -1,4 +1,4 @@
-gym
+gym[atari]
 scipy
 matplotlib
 tensorflow
