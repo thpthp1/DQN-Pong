@@ -1,0 +1,6 @@
+gym
+scipy
+matplotlib
+tensorflow
+keras
+numpy
