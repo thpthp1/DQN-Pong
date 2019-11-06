@@ -34,6 +34,7 @@ Agent:
 		- gamma
 		- state-memory (either to a memory list/stack or a text file)
 		- Episodes
+		- environment
 	functions:
 		- train
 		- replay
