@@ -2,14 +2,15 @@
 
 We are implementing this paper:://www.cs.toronto.edu/~vmnih/docs/dqn.pdf
 
+Currently should run a 
 xt ∈ R^d each of this is an image
 Pseudocode of DQL with experience replay:
 ```
 Initialize replay memory D to capacity N
 Initialize action-value function Q with random weights
-for episode = 1, M do
+for episode = 1, M do -> This will be train
 	Initialise sequence s_1 = {x_1} and preprocessed sequenced φ_1 = φ(s1)
-	for t = 1, T do
+	for t = 1, T do -> this is playing a game on the model
 		With probability  select a random action at
 		otherwise select at = maxa Q∗
 		(φ(st), a; θ)
