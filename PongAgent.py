@@ -17,6 +17,7 @@ class Agent(object):
         self.num_eps = num_eps
         self.mem = deque(maxlen=mem_len)
         self.actions = actions
+        self.__trained = False
 
     def _model(self):
         '''
@@ -29,11 +30,11 @@ class Agent(object):
         model.add(Conv2D(32, kernel_size=3, activation='relu'))
         model.add(Flatten())
         model.add(Dense(1, activation='softmax'))
-        model.compile(optimizer='adam', loss='categorical_crossentropy')
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
         self.model = model
         return model
 
-    def _epsilon_greedy(self, epsilon, state):
+    def _epsilon_greedy(self, state, epsilon):
         rand_num = np.random.random()
         if rand_num < epsilon:
             # Explore random move
@@ -43,7 +44,9 @@ class Agent(object):
             action = np.argmax(self.model.predict(state))
         return action
     
-    def train(self):
+    def train(self, step_limit=10000, epsilon=0.5, epsilon_decay=0.99, batch_size=64):
+        self._model()
+        self.__trained = True
         '''
         for episode = 1, M do -> This will be train
             Initialise sequence s_1 = {x_1} and preprocessed sequenced φ_1 = φ(s1)
@@ -65,13 +68,49 @@ class Agent(object):
         end for
         '''
         for _ in range(self.num_eps):
-            view = self.env.reset()
-            pview = self._processed_frame(view)
-            prev_view = None
-            observed_pviews = [pview]
+            '''
+                memory <- empty
+				model <- untrained model
+				for each episode:
+					current-state = environment's initial state
+					processed-state = process-state(state)
+					for each step at playing the game or it timeouts:
+						action <- make epsilon-greedy decision based on the current state
+						get reward, next state, is_terminal from the actions on the environment
+						store this transition (s_{t}, action, s_{t + 1), is_terminal) into memory
+						batch <- sample a random batch (might consider batch size here)
+						rewards = empty
+						for each sample in the batch:
+							label each sample's reward with
+							reward if terminal state
+							reward = reward + gamma * model's prediction on next state
+							add reward to rewards
+						train the model on the batch's states and rewards
+            '''
+            curr_view = self.env.reset()
+            curr_pview = self._processed_frame(curr_view) #to be stored
+            
+            for _ in range(step_limit):
+                action = self._epsilon_greedy(curr_pview, epsilon)
+                next_view, reward, done, _ = self.env.step(action)
+                self.mem.append((curr_pview, reward, done, self._processed_frame(next_view)))
+                if len(self.mem) > batch_size:
+                    pviews, rewards = self.training_data(batch_size)
+                    self.model.train_on_batch(pviews, rewards)
+                    
 
-    def replay(self):
-        pass
+
+    def training_data(self, batch_size):
+        batch = random.sample(self.mem, batch_size)
+        pviews = []
+        rewards = []
+        for pview, reward, done, next_pview in batch:
+            pviews.append(pview)
+            if done:
+                rewards.append(rewards)
+            else:
+                rewards.append(rewards + self.gamma*np.amax(self.model.predict(next_pview)))
+        return np.array(pviews), np.array(rewards)
 
     def play(self, step_limit=10000):
         '''

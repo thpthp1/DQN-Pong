@@ -37,7 +37,27 @@ Agent:
 		- Episodes
 		- environment
 	functions:
-		- train
+		- train: 
+			Pseudocode: 
+			-
+				memory <- empty
+				model <- untrained model
+				for each episode:
+					current-state = environment's initial state
+					processed-state = process-state(state)
+					for each step at playing the game or it timeouts:
+						action <- make epsilon-greedy decision based on the current state
+						get reward, next state, is_terminal from the actions on the environment
+						store this transition (s_{t}, action, s_{t + 1), is_terminal) into memory
+						batch <- sample a random batch (might consider batch size here)
+						rewards = empty
+						for each sample in the batch:
+							label each sample's reward with
+							reward if terminal state
+							reward = reward + gamma * model's prediction on next state
+							add reward to rewards
+						train the model on the batch's states and rewards
 		- replay
 		- save_weights
-		- play
+		- epsilon_greedy
+			- make a random move with probability y
