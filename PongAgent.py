@@ -48,27 +48,6 @@ class Agent(object):
         self._model()
         self.__trained = True
         '''
-        for episode = 1, M do -> This will be train
-            Initialise sequence s_1 = {x_1} and preprocessed sequenced φ_1 = φ(s1)
-            for t = 1, T do -> this is playing a game on the model
-                With probability  select a random action at
-                otherwise select at = maxa Q∗
-                (φ(st), a; θ)
-                Execute action at in emulator and observe reward rt and image xt+1
-                Set s_{t+1} = s_t, a_t, x_{t+1} and preprocess φt+1 = φ(st+1)
-                Store transition (φ_t, a_t, rt, φ_{t+1}) in D
-                Sample random minibatch of transitions (φ_j , aj , rj , φ_{j+1}) from D
-                Set yj =
-                
-                rj for terminal φ_{j+1}
-                rj + γ maxa0 Q(φ_{j+1}, a_0; θ) for non-terminal φj+1
-                Perform a gradient descent step on (yj − Q(φ_j , a_j ; θ))2
-                according to equation 3
-            end for
-        end for
-        '''
-        for _ in range(self.num_eps):
-            '''
                 memory <- empty
 				model <- untrained model
 				for each episode:
@@ -86,20 +65,25 @@ class Agent(object):
 							reward = reward + gamma * model's prediction on next state
 							add reward to rewards
 						train the model on the batch's states and rewards
-            '''
+        '''
+        for _ in range(self.num_eps):
             curr_view = self.env.reset()
             curr_pview = self._processed_frame(curr_view) #to be stored
             
             for _ in range(step_limit):
                 action = self._epsilon_greedy(curr_pview, epsilon)
                 next_view, reward, done, _ = self.env.step(action)
-                self.mem.append((curr_pview, reward, done, self._processed_frame(next_view)))
+                next_pview = self._processed_frame(next_view)
+                self.mem.append((curr_pview, reward, done, next_pview))
+                curr_pview = next_pview
                 if len(self.mem) > batch_size:
                     pviews, rewards = self.training_data(batch_size)
                     self.model.train_on_batch(pviews, rewards)
-                    
-
-
+                if done:
+                    break
+                if epsilon <= 0.001:
+                    epsilon *= epsilon_decay
+                
     def training_data(self, batch_size):
         batch = random.sample(self.mem, batch_size)
         pviews = []
@@ -133,7 +117,8 @@ class Agent(object):
         view[view == 144] = 0 # erase background (background type 1)
         view[view == 109] = 0 # erase background (background type 2)
         view[view != 0] = 1 # everything else (paddles, ball) just set to 1. this makes the image grayscale effectively
-        return view.astype(np.float) # ravel flattens an array and collapses it into a column vector
+        view = np.expand_dims(view.astype(np.float), axis=-1) # ravel flattens an array and collapses it into a column vector
+        return np.resize(view, (1, 80, 80, 1))
 
 if __name__ == '__main__':
     env = gym.make('Pong-v0')
@@ -146,4 +131,6 @@ if __name__ == '__main__':
         view[view != 0] = 1 # everything else (paddles, ball) just set to 1. this makes the image grayscale effectively
         return view.astype(np.float) # ravel flattens an array and collapses it into a column vector
     print(processed_frame(view).shape)
+    agent = Agent(env, env.action_space.n)
+    agent.train()
 
