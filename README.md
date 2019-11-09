@@ -1,5 +1,5 @@
 # Making a Deep Q Learning model for pong
-
+Short learning project, mostly learning how to do neural network training
 We are implementing this paper:://www.cs.toronto.edu/~vmnih/docs/dqn.pdf
 
 Currently should run a 
