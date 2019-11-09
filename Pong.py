@@ -48,7 +48,6 @@ class Agent(object):
         Build a new model
         '''
         inputs = keras.layers.Input(shape=(80*80, ))
-        flattened_layer = keras.layers.Flatten()(inputs)
         full_connect_1 = Dense(units=200,activation='relu',use_bias=False,)(flattened_layer)
         sigmoid_output = Dense(1,activation='sigmoid',use_bias=False)(full_connect_1)
         policy_network_model = keras.models.Model(inputs=inputs,outputs=sigmoid_output)
