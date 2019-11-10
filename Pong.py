@@ -36,7 +36,7 @@ class Agent(object):
             # we calculate log of probablity. y_pred is the probablity of taking up action
             # note that y_true is 1 when we actually chose up, and 0 when we chose down
             # this is probably similar to cross enthropy formula in keras, but here we write it manually to multiply it by the reward value
-            tmp_loss = Lambda(lambda x: (y_true)*keras.backend.log(x) + (1 - y_true)*keras.backend.log(x))(tmp_pred)
+            tmp_loss = Lambda(lambda x: - (y_true)*keras.backend.log(x) - (1.0 - y_true)*keras.backend.log(x))(tmp_pred)
             # multiply log of policy by reward
             policy_loss = Multiply()([tmp_loss,episode_reward])
             return policy_loss
