@@ -123,17 +123,6 @@ class Agent(object):
         discounted_r -= np.mean(discounted_r) #normalizing the result
         discounted_r /= np.std(discounted_r) #idem
         return discounted_r
-
-    def play(self, step_limit=10000):
-        '''
-        Run one episode
-        Arguments: step_limit: How many steps it can play before something we dropout
-        '''
-        view = self._processed_frame(self.env.reset())
-        previous_view = None
-        for _ in range(step_limit):
-            continue
-        pass
             
 
     def _processed_frame(self, view : np.ndarray):
@@ -155,7 +144,7 @@ class Agent(object):
 if __name__ == '__main__':
     env = gym.make('Pong-v0')
     view = env.reset()
-    agent = Agent(env, actions=2, action_map={1:2, 0:3}, num_eps=21)
+    agent = Agent(env, actions=2, action_map={1:2, 0:3}, num_eps=101)
     agent.train()
     env.close()
     env = wrappers.Monitor(env, "./gym-results", force=True)
