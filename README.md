@@ -2,6 +2,7 @@
 Short learning project, mostly learning how to do neural network training
 We are implementing this paper:://www.cs.toronto.edu/~vmnih/docs/dqn.pdf
 (This has now been modified to not do random batches anymore as it will take very long for every play)
+Main functionalities are used from karpathy's blog post and thinking particle's use of the keras architecture
 
 Currently should run a 
 xt ∈ R^d each of this is an image
