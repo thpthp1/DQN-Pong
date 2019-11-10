@@ -26,7 +26,17 @@ class Agent(object):
         
     def m_loss(self, episode_reward):
         def loss(y_true,y_pred):
-            tmp_loss = Lambda(lambda x: keras.backend.mean(keras.backend.square(y_pred - y_true), axis=-1))(y_pred)
+            # feed in y_true as actual action taken 
+            # if actual action was up, we feed 1 as y_true and otherwise 0
+            # y_pred is the network output(probablity of taking up action)
+            # note that we dont feed y_pred to network. keras computes it
+
+            # first we clip y_pred between some values because log(0) and log(1) are undefined
+            tmp_pred = Lambda(lambda x: keras.backend.clip(x,0.05,0.95))(y_pred)
+            # we calculate log of probablity. y_pred is the probablity of taking up action
+            # note that y_true is 1 when we actually chose up, and 0 when we chose down
+            # this is probably similar to cross enthropy formula in keras, but here we write it manually to multiply it by the reward value
+            tmp_loss = Lambda(lambda x: (y_true)*keras.backend.log(x) + (1 - y_true)*keras.backend.log(x))(tmp_pred)
             # multiply log of policy by reward
             policy_loss = Multiply()([tmp_loss,episode_reward])
             return policy_loss
